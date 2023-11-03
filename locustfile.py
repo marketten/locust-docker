@@ -4,6 +4,7 @@ import logging
 from random import randrange
 import sys
 from locust import HttpUser, between, task, run_single_user
+import time
 
 class WebsiteUser(HttpUser):
     wait_time = between(5, 15)
@@ -160,6 +161,7 @@ class WebsiteUser(HttpUser):
                 self.headers["Authorization"] = "Bearer " + self.userToken
 
     def add_product(self):
+        time.sleep(30)
         selected_product = self.products[randrange(len(self.products))]
         response = self.client.post("/api/Cart/UpdateCart", json={
             "region": self.regionId,
