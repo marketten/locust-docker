@@ -1,5 +1,5 @@
 FROM locustio/locust
-COPY locustfile.py .
 ENV PORT=8080
-EXPOSE $PORT
-ENTRYPOINT ["sh","-c","locust --web-port=$PORT --master-host=locusthost.tekmarglobal.com --worker"]
+COPY locustfile.py .
+COPY start.sh .
+ENTRYPOINT ["sh","start.sh"]
