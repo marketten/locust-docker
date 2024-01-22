@@ -4,12 +4,13 @@ import logging
 from random import randrange
 import sys
 from locust import HttpUser, between, task, run_single_user
+
 import time
 
 class WebsiteUser(HttpUser):
-    wait_time = between(5, 15)
-    host = "http://loadtest.tekmarglobal.com"
-    tid = "loadtest"
+    wait_time = 1
+    host = "http://api.test.tekmarglobal.com"
+    tid = "marketten"
 
     def __init__(self, *args, **kwargs):
         super(WebsiteUser, self).__init__(*args, **kwargs)
@@ -28,7 +29,8 @@ class WebsiteUser(HttpUser):
 
     @task
     def index(self):
-        self.deviceId = str(uuid.uuid4())
+        #self.deviceId = str(uuid.uuid4())
+        self.deviceId = "905000000000";
         logging.info(self.deviceId + " device Id için teste başlanıldı.")
         self.login()
         self.select_first_neighborhood()
@@ -88,7 +90,7 @@ class WebsiteUser(HttpUser):
         })
         if response.status_code == 200:
             data = json.loads(response.text).get("data")
-            self.selectedNeighborhood = {"name":"19 Mayıs", "id":3495}
+            self.selectedNeighborhood = data[randrange(len(data))]
             logging.debug((self.selectedNeighborhood.get("name") + " mahallesi seçildi"))
 
     def create_cart(self):
@@ -161,8 +163,8 @@ class WebsiteUser(HttpUser):
                 self.headers["Authorization"] = "Bearer " + self.userToken
 
     def add_product(self):
-        time.sleep(30)
         selected_product = self.products[randrange(len(self.products))]
+        logging.debug("Sepete ürün ekleniyor...")
         response = self.client.post("/api/Cart/UpdateCart", json={
             "region": self.regionId,
             "productId": selected_product.get("productId"),
@@ -170,7 +172,9 @@ class WebsiteUser(HttpUser):
         })
         if response.status_code == 200:
             data = json.loads(response.text).get("data")
-            if data.get("cartTotal") < self.minimumCartAmount:
+            cartTotal = data.get("cartTotal")
+            logging.debug("Ürün sepete eklendi. Sepet toplamı: " + cartTotal)
+            if cartTotal < self.minimumCartAmount:
                 self.add_product()
 
     def update_customer(self):
